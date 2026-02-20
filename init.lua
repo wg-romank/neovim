@@ -13,6 +13,7 @@ vim.opt.shiftwidth = 2        -- Size of an indent
 vim.opt.expandtab = true      -- Use spaces instead of tabs
 vim.opt.clipboard = "unnamedplus" -- Clipboard sync
 vim.g.mapleader = " "         -- Set leader key to space
+vim.g.no_plugin_maps = true
 
 -- 3. Configure Plugins
 require("lazy").setup({
@@ -38,7 +39,7 @@ require("lazy").setup({
   },
 
   -- Syntax Highlighting
-  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate",  },
+  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" } },
 
   {
     "hrsh7th/nvim-cmp",
@@ -140,8 +141,42 @@ configs.setup({
   highlight = {
     enable = true,
     additional_vim_regex_highlighting = false,
-  }
+  },
 })
+
+local textobjects = require('nvim-treesitter-textobjects').setup({
+  select = {
+    enable = true,
+    lookahead = true,
+    selection_modes = {
+      ['@parameter.outer'] = 'v',
+      ['@function.outer'] = 'V',
+      ['@class.outer'] = 'V',
+    },
+  },
+
+})
+
+vim.keymap.set({ "x", "o" }, "af", function()
+  require "nvim-treesitter-textobjects.select".select_textobject("@function.outer", "textobjects")
+end)
+vim.keymap.set({ "x", "o" }, "if", function()
+  require "nvim-treesitter-textobjects.select".select_textobject("@function.inner", "textobjects")
+end)
+vim.keymap.set({ "x", "o" }, "ac", function()
+  require "nvim-treesitter-textobjects.select".select_textobject("@class.outer", "textobjects")
+end)
+vim.keymap.set({ "x", "o" }, "ic", function()
+  require "nvim-treesitter-textobjects.select".select_textobject("@class.inner", "textobjects")
+end)
+-- TODO: expression
+-- vim.keymap.set({ "x", "o" }, "ae", function()
+--   require "nvim-treesitter-textobjects.select".select_textobject("@expression.outer", "textobjects")
+-- end)
+-- vim.keymap.set({ "x", "o" }, "ie", function()
+--   require "nvim-treesitter-textobjects.select".select_textobject("@expression.inner", "textobjects")
+-- end)
+
 
 local lualine = require('lualine')
 
