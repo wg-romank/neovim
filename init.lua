@@ -70,26 +70,15 @@ require("lazy").setup({
         desc = "Symbols (Trouble)",
       },
     },
+    {
+      'windwp/nvim-autopairs',
+      event = "InsertEnter",
+      config = true -- This is equivalent to calling require("nvim-autopairs").setup{}
+    }
   }
 })
 
 -- 4. LSP Setup (Connecting the wires)
-vim.lsp.config('pyright', {
-  settings = {
-    python = {
-      analysis = {
-        -- Stops the LSP from reporting errors in these folders
-        ignore = { ".venv", "**/site-packages", "build" },
-        -- Only show diagnostics for files currently open in a buffer
-        diagnosticMode = "openFilesOnly",
-        -- Keeps type-hinting working for external libs without deep scanning
-        useLibraryCodeForTypes = true,
-        autoSearchPaths = false,
-      },
-    },
-  },
-})
-
 vim.lsp.enable('lua_ls')
 vim.lsp.enable('pyright')
 -- vim.lsp.enable('jedi_language_server')
@@ -106,6 +95,19 @@ vim.keymap.set("n", "<Tab>", "<cmd>bnext<CR>", { desc = "Switch to next buffer" 
 vim.keymap.set("n", "<S-Tab>", "<cmd>bprevious<CR>", { desc = "Switch to previous buffer" })
 vim.keymap.set("n", "<leader>x", "<cmd>bd<CR>", { desc = "Close buffer" })
 
+vim.keymap.set({'n', 'i'}, '<C-k>', vim.lsp.buf.signature_help, {desc = 'Trigger signature help'})
+
+-- set keymap to toggle nvim-tree and find the current file
+vim.keymap.set('n', '<leader>e', function()
+  -- Check if the current buffer is the NvimTree buffer
+  if vim.fn.bufname():match('NvimTree_') then
+    -- If it is, switch focus to the previous window/buffer
+    vim.cmd.wincmd('p')
+  else
+    -- Otherwise, call the NvimTreeFindFileToggle command
+    vim.cmd('NvimTreeFindFileToggle')
+  end
+end, { desc = 'nvim-tree: toggle & find file' })
 
 local ts = require('telescope.builtin')
 
