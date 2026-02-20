@@ -34,7 +34,7 @@ require("lazy").setup({
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = { options = { theme = 'dracula' } } -- You can change the theme here
+    opts = { options = { theme = 'mellow' } }
   },
 
   -- Syntax Highlighting
@@ -52,13 +52,46 @@ require("lazy").setup({
     }
   },
 
-  { "catppuccin/nvim" }
+  { "mellow-theme/mellow.nvim" },
+  {
+    "folke/trouble.nvim",
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
+    keys = {
+      {
+        "<leader>dd",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>fs",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+    },
+  }
 })
 
 -- 4. LSP Setup (Connecting the wires)
+vim.lsp.config('pyright', {
+  settings = {
+    python = {
+      analysis = {
+        -- Stops the LSP from reporting errors in these folders
+        ignore = { ".venv", "**/site-packages", "build" },
+        -- Only show diagnostics for files currently open in a buffer
+        diagnosticMode = "openFilesOnly",
+        -- Keeps type-hinting working for external libs without deep scanning
+        useLibraryCodeForTypes = true,
+        autoSearchPaths = false,
+      },
+    },
+  },
+})
+
 vim.lsp.enable('lua_ls')
--- vim.lsp.enable('pyright')
-vim.lsp.enable('jedi_language_server')
+vim.lsp.enable('pyright')
+-- vim.lsp.enable('jedi_language_server')
 vim.lsp.enable('rust_analyzer')
 
 -- 5. Basic Keymaps
@@ -68,34 +101,28 @@ vim.keymap.set("n", "<leader>/", "gcc", { remap = true, desc = "Toggle comment" 
 vim.keymap.set("n", ";", ":", { remap = true, desc = "Toggle comment" })
 vim.keymap.set("v", "<leader>/", "gc", { remap = true, desc = "Toggle comment" })
 
+vim.keymap.set("n", "<Tab>", "<cmd>bnext<CR>", { desc = "Switch to next buffer" })
+vim.keymap.set("n", "<S-Tab>", "<cmd>bprevious<CR>", { desc = "Switch to previous buffer" })
+vim.keymap.set("n", "<leader>x", "<cmd>bd<CR>", { desc = "Close buffer" })
+
+
 local ts = require('telescope.builtin')
 
 vim.keymap.set('n', 'gd', ts.lsp_definitions, {})
 vim.keymap.set('n', 'gr', ts.lsp_references, {})
 vim.keymap.set('n', 'gi', ts.lsp_implementations, {})
 vim.keymap.set('n', '<leader>ff', ts.find_files, {})
+vim.keymap.set('n', '<leader>fb', ts.buffers, {})
 vim.keymap.set('n', '<leader>fw', ts.live_grep, {})
-vim.keymap.set('n', '<leader>dd', function()
-  ts.diagnostics({
-    wrap_results = true,
-    path_display = { "hidden" },
-  })
-end, {})
 
 require('telescope').setup({
   pickers = {
-    find_files = {
-      theme = "dropdown",
-    },
-    diagnostics = {
-      theme = "dropdown",
-    }
-  },
+    find_files = { theme = 'dropdown', previewer = false },
+    buffers = { theme = 'dropdown', previewer = false },
+  }
 })
 
-
 local cmp = require('cmp')
-
 cmp.setup({
   mapping = cmp.mapping.preset.insert({
     ['<TAB>'] = cmp.mapping.confirm({ select = true }), -- Accept suggestion with Enter
@@ -107,13 +134,26 @@ cmp.setup({
   })
 })
 
--- local configs = require("nvim-treesitter")
---
--- configs.setup({
---   highlight = {
---     enable = true, 
---     additional_vim_regex_highlighting = false,
---   }
--- })
---
-vim.cmd.colorscheme('catppuccin')
+local configs = require("nvim-treesitter")
+
+configs.setup({
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = false,
+  }
+})
+
+local lualine = require('lualine')
+
+lualine.setup({
+  sections = {
+    lualine_a = { 'mode' },
+    lualine_b = { 'buffers', { show_filename_only = true } },
+    lualine_c = {},
+    lualine_x = {},
+    lualine_y = { 'location' },
+    lualine_z = { 'searchcount', 'selectioncount' }
+  }
+})
+
+vim.cmd.colorscheme('mellow')
