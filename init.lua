@@ -20,9 +20,9 @@ vim.g.no_plugin_maps = true
 -- 3. Configure Plugins
 require("lazy").setup({
   -- LSP Management
-  { "williamboman/mason.nvim", config = true }, -- Portable package manager
+  { "williamboman/mason.nvim", config = true, cmd = {'Mason', 'MasonInstall'} }, -- Portable package manager
   { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'pyright', 'rust_analyzer'} }, -- Bridges mason and lspconfig
-  { "neovim/nvim-lspconfig", event = {"BufReadPost", "BufNewFile"} }, -- Common configurations for LSP
+  { "neovim/nvim-lspconfig", event = {"BufReadPost", "BufNewFile"}, dependencies = {'mason.nvim'}}, -- Common configurations for LSP
 
   -- File Tree
   { "nvim-tree/nvim-tree.lua", config = true, dependencies = { "nvim-tree/nvim-web-devicons" } },
