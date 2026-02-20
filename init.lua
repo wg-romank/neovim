@@ -16,6 +16,8 @@ vim.opt.expandtab = true      -- Use spaces instead of tabs
 vim.opt.clipboard = "unnamedplus" -- Clipboard sync
 vim.g.mapleader = " "         -- Set leader key to space
 vim.g.no_plugin_maps = true
+vim.opt.cmdheight = 0
+vim.opt.laststatus = 0
 
 -- 3. Configure Plugins
 require("lazy").setup({
