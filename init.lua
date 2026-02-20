@@ -113,6 +113,7 @@ require("lazy").setup({
       select = {
         enable = true,
         lookahead = true,
+        include_surrounding_whitespace = true,
         selection_modes = {
           ['@parameter.outer'] = 'v',
           ['@function.outer'] = 'V',
