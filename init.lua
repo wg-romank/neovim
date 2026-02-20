@@ -19,6 +19,15 @@ vim.g.no_plugin_maps = true
 vim.opt.cmdheight = 0
 vim.opt.laststatus = 0
 vim.opt.termguicolors = true
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "markdown", "text" }, -- Add any filetypes here
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+    vim.opt_local.breakindent = true
+    vim.opt_local.showbreak = "  "
+  end
+})
 
 -- 3. Configure Plugins
 require("lazy").setup({
@@ -164,7 +173,11 @@ require("lazy").setup({
     'windwp/nvim-autopairs',
     event = "InsertEnter",
     config = true -- This is equivalent to calling require("nvim-autopairs").setup{}
-  }
+  },
+  {
+    "OXY2DEV/markview.nvim",
+    lazy = false,
+  },
 }
 })
 
