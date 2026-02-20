@@ -7,6 +7,8 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+vim.g.loaded_python3_provider = 0
+
 -- 2. General Settings (The "Non-Magic" parts)
 vim.opt.number = true         -- Show line numbers
 vim.opt.shiftwidth = 2        -- Size of an indent
@@ -20,7 +22,7 @@ require("lazy").setup({
   -- LSP Management
   { "williamboman/mason.nvim", config = true }, -- Portable package manager
   { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'pyright', 'rust_analyzer'} }, -- Bridges mason and lspconfig
-  { "neovim/nvim-lspconfig" }, -- Common configurations for LSP
+  { "neovim/nvim-lspconfig", event = {"BufReadPost", "BufNewFile"} }, -- Common configurations for LSP
 
   -- File Tree
   { "nvim-tree/nvim-tree.lua", config = true, dependencies = { "nvim-tree/nvim-web-devicons" } },
@@ -187,7 +189,7 @@ lualine.setup({
     lualine_a = { 'mode' },
     lualine_b = { 'buffers', { show_filename_only = true } },
     lualine_c = {},
-    lualine_x = {},
+    lualine_x = { 'lsp_status' },
     lualine_y = { 'location' },
     lualine_z = { 'searchcount', 'selectioncount' }
   }
