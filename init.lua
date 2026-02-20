@@ -20,9 +20,19 @@ vim.g.no_plugin_maps = true
 -- 3. Configure Plugins
 require("lazy").setup({
   -- LSP Management
-  { "williamboman/mason.nvim", config = true, cmd = {'Mason', 'MasonInstall'} }, -- Portable package manager
-  { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'pyright', 'rust_analyzer'} }, -- Bridges mason and lspconfig
-  { "neovim/nvim-lspconfig", event = {"BufReadPost", "BufNewFile"}, dependencies = {'mason.nvim'}}, -- Common configurations for LSP
+  { 
+    "neovim/nvim-lspconfig", 
+    event = {"BufReadPost", "BufNewFile"}, 
+    dependencies = {
+      { "williamboman/mason.nvim", config = true },
+      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'pyright', 'rust_analyzer'} },
+    }, 
+    config = function ()
+      vim.lsp.enable('lua_ls')
+      vim.lsp.enable('pyright')
+      vim.lsp.enable('rust_analyzer')
+    end
+  }, -- Common configurations for LSP
 
   -- File Tree
   { "nvim-tree/nvim-tree.lua", config = true, dependencies = { "nvim-tree/nvim-web-devicons" } },
@@ -31,60 +41,127 @@ require("lazy").setup({
   { 
     "nvim-telescope/telescope.nvim", 
     dependencies = { "nvim-lua/plenary.nvim" },
+    config = function ()
+
+      local ts = require('telescope.builtin')
+
+      vim.keymap.set('n', 'gd', ts.lsp_definitions, {})
+      vim.keymap.set('n', 'gr', ts.lsp_references, {})
+      vim.keymap.set('n', 'gi', ts.lsp_implementations, {})
+      vim.keymap.set('n', '<leader>ff', ts.find_files, {})
+      vim.keymap.set('n', '<leader>fb', ts.buffers, {})
+      vim.keymap.set('n', '<leader>fw', ts.live_grep, {})
+
+      require('telescope').setup({
+        pickers = {
+          find_files = { theme = 'dropdown', previewer = false },
+          buffers = { theme = 'dropdown', previewer = false },
+        }
+      })
+
+    end
   },
 
   -- Status Line
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = { options = { theme = 'mellow' } }
+    opts = { options = { theme = 'mellow' } },
+    config = function ()
+      local lualine = require('lualine')
+
+      lualine.setup({
+        sections = {
+          lualine_a = { 'mode' },
+          lualine_b = { 'buffers', { show_filename_only = true } },
+          lualine_c = {},
+          lualine_x = { 'lsp_status' },
+          lualine_y = { 'location' },
+          lualine_z = { 'searchcount', 'selectioncount' }
+        }
+      })
+    end
   },
 
   -- Syntax Highlighting
-  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" } },
+  { "nvim-treesitter/nvim-treesitter",
+  build = ":TSUpdate", 
+  dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" } ,
+  config = function ()
+    local configs = require("nvim-treesitter")
 
-  {
-    "hrsh7th/nvim-cmp",
-    event = "InsertEnter", -- Load only when you start typing
-    dependencies = {
-      "hrsh7th/cmp-nvim-lsp", -- LSP suggestions
-      "hrsh7th/cmp-buffer",   -- Current buffer suggestions
-      "hrsh7th/cmp-path",     -- File path suggestions
-      "onsails/lspkind.nvim", -- IntelliJ-style icons (optional)
-      "L3MON4D3/LuaSnip",     -- Snippet engine (required by cmp)
-    }
+    configs.setup({
+      highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = false,
+      },
+    })
+
+    require('nvim-treesitter-textobjects').setup({
+      select = {
+        enable = true,
+        lookahead = true,
+        selection_modes = {
+          ['@parameter.outer'] = 'v',
+          ['@function.outer'] = 'V',
+          ['@class.outer'] = 'V',
+        },
+      },
+    })
+  end
+},
+
+{
+  "hrsh7th/nvim-cmp",
+  event = "InsertEnter", -- Load only when you start typing
+  dependencies = {
+    "hrsh7th/cmp-nvim-lsp", -- LSP suggestions
+    "hrsh7th/cmp-buffer",   -- Current buffer suggestions
+    "hrsh7th/cmp-path",     -- File path suggestions
+    "onsails/lspkind.nvim", -- IntelliJ-style icons (optional)
+    "L3MON4D3/LuaSnip",     -- Snippet engine (required by cmp)
   },
+  config = function ()
+    local cmp = require('cmp')
+    cmp.setup({
+      mapping = cmp.mapping.preset.insert({
+        ['<TAB>'] = cmp.mapping.confirm({ select = true }), -- Accept suggestion with Enter
+      }),
+      sources = cmp.config.sources({
+        { name = 'nvim_lsp' }, -- Suggestions from your Language Server
+        { name = 'buffer' },   -- Suggestions from the current file
+        { name = 'path' },     -- File system paths
+      })
+    })
+  end
+},
 
-  { "mellow-theme/mellow.nvim" },
-  {
-    "folke/trouble.nvim",
-    opts = {}, -- for default options, refer to the configuration section for custom setup.
-    cmd = "Trouble",
-    keys = {
-      {
-        "<leader>dd",
-        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
-        desc = "Buffer Diagnostics (Trouble)",
-      },
-      {
-        "<leader>fs",
-        "<cmd>Trouble symbols toggle focus=false<cr>",
-        desc = "Symbols (Trouble)",
-      },
+{ "mellow-theme/mellow.nvim" },
+{
+  "folke/trouble.nvim",
+  opts = {}, -- for default options, refer to the configuration section for custom setup.
+  cmd = "Trouble",
+  keys = {
+    {
+      "<leader>dd",
+      "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+      desc = "Buffer Diagnostics (Trouble)",
     },
     {
-      'windwp/nvim-autopairs',
-      event = "InsertEnter",
-      config = true -- This is equivalent to calling require("nvim-autopairs").setup{}
-    }
+      "<leader>fs",
+      "<cmd>Trouble symbols toggle focus=false<cr>",
+      desc = "Symbols (Trouble)",
+    },
+  },
+  {
+    'windwp/nvim-autopairs',
+    event = "InsertEnter",
+    config = true -- This is equivalent to calling require("nvim-autopairs").setup{}
   }
+}
 })
 
 -- 4. LSP Setup (Connecting the wires)
-vim.lsp.enable('lua_ls')
-vim.lsp.enable('pyright')
--- vim.lsp.enable('jedi_language_server')
-vim.lsp.enable('rust_analyzer')
 
 -- 5. Basic Keymaps
 vim.keymap.set("n", "<C-n>", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer" })
@@ -111,56 +188,6 @@ vim.keymap.set('n', '<leader>e', function()
   end
 end, { desc = 'nvim-tree: toggle & find file' })
 
-local ts = require('telescope.builtin')
-
-vim.keymap.set('n', 'gd', ts.lsp_definitions, {})
-vim.keymap.set('n', 'gr', ts.lsp_references, {})
-vim.keymap.set('n', 'gi', ts.lsp_implementations, {})
-vim.keymap.set('n', '<leader>ff', ts.find_files, {})
-vim.keymap.set('n', '<leader>fb', ts.buffers, {})
-vim.keymap.set('n', '<leader>fw', ts.live_grep, {})
-
-require('telescope').setup({
-  pickers = {
-    find_files = { theme = 'dropdown', previewer = false },
-    buffers = { theme = 'dropdown', previewer = false },
-  }
-})
-
-local cmp = require('cmp')
-cmp.setup({
-  mapping = cmp.mapping.preset.insert({
-    ['<TAB>'] = cmp.mapping.confirm({ select = true }), -- Accept suggestion with Enter
-  }),
-  sources = cmp.config.sources({
-    { name = 'nvim_lsp' }, -- Suggestions from your Language Server
-    { name = 'buffer' },   -- Suggestions from the current file
-    { name = 'path' },     -- File system paths
-  })
-})
-
-local configs = require("nvim-treesitter")
-
-configs.setup({
-  highlight = {
-    enable = true,
-    additional_vim_regex_highlighting = false,
-  },
-})
-
-local textobjects = require('nvim-treesitter-textobjects').setup({
-  select = {
-    enable = true,
-    lookahead = true,
-    selection_modes = {
-      ['@parameter.outer'] = 'v',
-      ['@function.outer'] = 'V',
-      ['@class.outer'] = 'V',
-    },
-  },
-
-})
-
 vim.keymap.set({ "x", "o" }, "af", function()
   require "nvim-treesitter-textobjects.select".select_textobject("@function.outer", "textobjects")
 end)
@@ -180,19 +207,5 @@ end)
 -- vim.keymap.set({ "x", "o" }, "ie", function()
 --   require "nvim-treesitter-textobjects.select".select_textobject("@expression.inner", "textobjects")
 -- end)
-
-
-local lualine = require('lualine')
-
-lualine.setup({
-  sections = {
-    lualine_a = { 'mode' },
-    lualine_b = { 'buffers', { show_filename_only = true } },
-    lualine_c = {},
-    lualine_x = { 'lsp_status' },
-    lualine_y = { 'location' },
-    lualine_z = { 'searchcount', 'selectioncount' }
-  }
-})
 
 vim.cmd.colorscheme('mellow')
