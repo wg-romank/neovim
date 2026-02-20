@@ -18,6 +18,7 @@ vim.g.mapleader = " "         -- Set leader key to space
 vim.g.no_plugin_maps = true
 vim.opt.cmdheight = 0
 vim.opt.laststatus = 0
+vim.opt.termguicolors = true
 
 -- 3. Configure Plugins
 require("lazy").setup({
@@ -67,7 +68,7 @@ require("lazy").setup({
   -- Status Line
   {
     "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { "nvim-tree/nvim-web-devicons", "mellow.nvim" },
     opts = { options = { theme = 'mellow' } },
     config = function ()
       local lualine = require('lualine')
@@ -138,7 +139,11 @@ require("lazy").setup({
   end
 },
 
-{ "mellow-theme/mellow.nvim" },
+{
+  "mellow-theme/mellow.nvim", config = function ()
+    vim.cmd.colorscheme('mellow')
+  end
+},
 {
   "folke/trouble.nvim",
   opts = {}, -- for default options, refer to the configuration section for custom setup.
@@ -209,5 +214,3 @@ end)
 -- vim.keymap.set({ "x", "o" }, "ie", function()
 --   require "nvim-treesitter-textobjects.select".select_textobject("@expression.inner", "textobjects")
 -- end)
-
-vim.cmd.colorscheme('mellow')
