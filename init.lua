@@ -19,7 +19,7 @@ vim.g.no_plugin_maps = true
 require("lazy").setup({
   -- LSP Management
   { "williamboman/mason.nvim", config = true }, -- Portable package manager
-  { "williamboman/mason-lspconfig.nvim", config = true }, -- Bridges mason and lspconfig
+  { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'pyright', 'rust_analyzer'} }, -- Bridges mason and lspconfig
   { "neovim/nvim-lspconfig" }, -- Common configurations for LSP
 
   -- File Tree
