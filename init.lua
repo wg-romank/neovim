@@ -61,6 +61,7 @@ require("lazy").setup({
       vim.keymap.set('n', 'gr', ts.lsp_references, {})
       vim.keymap.set('n', 'gi', ts.lsp_implementations, {})
       vim.keymap.set('n', '<leader>ff', ts.find_files, {})
+      vim.keymap.set('n', '<leader>fs', ts.lsp_document_symbols, {})
       vim.keymap.set('n', '<leader>fb', ts.buffers, {})
       vim.keymap.set('n', '<leader>fw', ts.live_grep, {})
 
