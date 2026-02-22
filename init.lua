@@ -39,11 +39,11 @@ require("lazy").setup({
     event = {"BufReadPost", "BufNewFile"}, 
     dependencies = {
       { "williamboman/mason.nvim", config = true },
-      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'pyright', 'rust_analyzer'} },
+      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'basedpyright', 'rust_analyzer'} },
     }, 
     config = function ()
       vim.lsp.enable('lua_ls')
-      vim.lsp.enable('pyright')
+      vim.lsp.enable('basedpyright')
       vim.lsp.enable('rust_analyzer')
     end
   },
