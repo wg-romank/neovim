@@ -189,7 +189,7 @@ vim.keymap.set("n", "<leader>x", "<cmd>bd<CR>", { desc = "Close buffer" })
 
 vim.keymap.set("n", "<leader>ra", vim.lsp.buf.rename, { desc = 'LSP Rename' })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = 'LSP Code actions' })
-vim.keymap.set("n", "<leader>df", vim.diagnostic.open_float, { desc = 'Diagnostics' })
+vim.keymap.set("n", "<leader>lf", vim.diagnostic.open_float, { desc = 'Diagnostics' })
 vim.keymap.set({'n', 'i'}, '<C-k>', vim.lsp.buf.signature_help, {desc = 'Trigger signature help'})
 
 vim.keymap.set({ "x", "o" }, "af", function()
