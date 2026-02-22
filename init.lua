@@ -19,6 +19,8 @@ vim.g.no_plugin_maps = true
 vim.opt.cmdheight = 0
 vim.opt.laststatus = 0
 vim.opt.termguicolors = true
+vim.opt.showcmd = true
+vim.opt.showcmdloc = 'statusline'
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "markdown", "text" }, -- Add any filetypes here
   callback = function()
@@ -89,8 +91,8 @@ require("lazy").setup({
         },
         sections = {
           lualine_a = { 'mode' },
-          lualine_b = { 'buffers', { show_filename_only = true } },
-          lualine_c = {},
+          lualine_b = { '%S' },
+          lualine_c = { 'buffers', { show_filename_only = true } },
           lualine_x = { 'lsp_status' },
           lualine_y = { 'location' },
           lualine_z = { 'searchcount', 'selectioncount' }
