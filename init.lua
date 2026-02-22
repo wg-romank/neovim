@@ -83,6 +83,9 @@ require("lazy").setup({
       local lualine = require('lualine')
 
       lualine.setup({
+        options = {
+          globalstatus = true,
+        },
         sections = {
           lualine_a = { 'mode' },
           lualine_b = { 'buffers', { show_filename_only = true } },
@@ -144,7 +147,7 @@ require("lazy").setup({
         { name = 'nvim_lsp' }, -- Suggestions from your Language Server
         { name = 'buffer' },   -- Suggestions from the current file
         { name = 'path' },     -- File system paths
-      })
+      }),
     })
   end
 },
