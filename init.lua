@@ -1,21 +1,12 @@
--- 1. Bootstrap lazy.nvim
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  vim.fn.system({
-    "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
-
--- 2. General Settings (The "Non-Magic" parts)
+-- 1. General Settings
 vim.g.loaded_python3_provider = 0
-vim.g.mapleader = " "         -- Set leader key to space
+vim.g.mapleader = " "
 vim.g.no_plugin_maps = true
 
-vim.opt.number = true         -- Show line numbers
-vim.opt.shiftwidth = 2        -- Size of an indent
-vim.opt.expandtab = true      -- Use spaces instead of tabs
-vim.opt.clipboard = "unnamedplus" -- Clipboard sync
+vim.opt.number = true
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.clipboard = "unnamedplus"
 vim.opt.cmdheight = 0
 vim.opt.laststatus = 0
 vim.opt.termguicolors = true
@@ -23,7 +14,7 @@ vim.opt.showcmd = true
 vim.opt.showcmdloc = 'statusline'
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "markdown", "text" }, -- Add any filetypes here
+  pattern = { "markdown", "text" },
   callback = function()
     vim.opt_local.wrap = true
     vim.opt_local.linebreak = true
@@ -32,15 +23,42 @@ vim.api.nvim_create_autocmd("FileType", {
   end
 })
 
+vim.diagnostic.config({
+  float = {
+    severity = vim.diagnostic.severity.ERROR,
+  },
+  virtual_text = {
+    severity = vim.diagnostic.severity.ERROR,
+  },
+  signs = {
+    severity = vim.diagnostic.severity.ERROR,
+  },
+  underline = false,
+})
+
+-- 2. Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  vim.fn.system({
+    "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
 -- 3. Configure Plugins
 require("lazy").setup({
-  { 
-    "neovim/nvim-lspconfig", 
-    event = {"BufReadPost", "BufNewFile"}, 
+  {
+    'goerz/jupytext.nvim',
+    version = '0.2.0',
+    opts = {},
+  },
+  {
+    "neovim/nvim-lspconfig",
+    event = {"BufReadPost", "BufNewFile"},
     dependencies = {
       { "williamboman/mason.nvim", config = true },
       { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'basedpyright', 'rust_analyzer'} },
-    }, 
+    },
     config = function ()
       vim.lsp.enable('lua_ls')
       vim.lsp.enable('basedpyright')
@@ -48,8 +66,8 @@ require("lazy").setup({
     end
   },
   { "nvim-tree/nvim-tree.lua", config = true, dependencies = { "nvim-tree/nvim-web-devicons" } },
-  { 
-    "nvim-telescope/telescope.nvim", 
+  {
+    "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function ()
       local ts = require('telescope.builtin')
@@ -60,15 +78,14 @@ require("lazy").setup({
       vim.keymap.set('n', '<leader>fs', function()
         require('telescope.builtin').lsp_document_symbols({
           show_line = true,
-          -- If fuzzy scores are equal (or prompt is empty), sort by line number
           tiebreak = function(current_entry, existing_entry, _)
             return current_entry.lnum < existing_entry.lnum
           end,
           layout_strategy = 'vertical',
           layout_config = {
             anchor = "E",
-            width = 0.45,        -- Occupies 35% of the screen width
-            height = 0.99,       -- Full height
+            width = 0.45,
+            height = 0.99,
             prompt_position = "top",
           },
           sorting_strategy = "ascending",
@@ -111,11 +128,9 @@ require("lazy").setup({
       })
     end
   },
-
-  -- Syntax Highlighting
-  { 
+  {
     "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate", 
+    build = ":TSUpdate",
     dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" } ,
     config = function ()
       local configs = require("nvim-treesitter")
@@ -138,6 +153,20 @@ require("lazy").setup({
             ['@class.outer'] = 'V',
           },
         },
+        {
+          move = {
+            enable = true,
+            set_jumps = true, -- Add jumps to jumplist
+            goto_next_start = {
+              ["]m"] = "@function.outer",
+              ["]]"] = "@class.outer",
+            },
+            goto_previous_start = {
+              ["[m"] = "@function.outer",
+              ["[["] = "@class.outer",
+            },
+          },
+        }
       })
     end
   },
@@ -148,13 +177,13 @@ require("lazy").setup({
   },
   {
     "hrsh7th/nvim-cmp",
-    event = "InsertEnter", -- Load only when you start typing
+    event = "InsertEnter",
     dependencies = {
-      "hrsh7th/cmp-nvim-lsp", -- LSP suggestions
-      "hrsh7th/cmp-buffer",   -- Current buffer suggestions
-      "hrsh7th/cmp-path",     -- File path suggestions
-      "onsails/lspkind.nvim", -- IntelliJ-style icons (optional)
-      "L3MON4D3/LuaSnip",     -- Snippet engine (required by cmp)
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "onsails/lspkind.nvim",
+      "L3MON4D3/LuaSnip",
     },
     config = function ()
       local cmp = require('cmp')
@@ -163,9 +192,9 @@ require("lazy").setup({
           ['<TAB>'] = cmp.mapping.confirm({ select = true }), -- Accept suggestion with Enter
         }),
         sources = cmp.config.sources({
-          { name = 'nvim_lsp' }, -- Suggestions from your Language Server
-          { name = 'buffer' },   -- Suggestions from the current file
-          { name = 'path' },     -- File system paths
+          { name = 'nvim_lsp' },
+          { name = 'buffer' },
+          { name = 'path' },
         }),
       })
     end
@@ -175,7 +204,29 @@ require("lazy").setup({
       vim.cmd.colorscheme('mellow')
     end
   },
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/neotest-python",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-neotest/nvim-nio"
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-python")({
+            runner = "pytest",
+            python = ''
+          }),
+        },
+      })
+    end
+  }
 })
+
+-- 4. Configure Keymaps
+vim.keymap.set('i', '<C-c>', '<Esc>', { desc = 'Ctrl+C equivalent to escape in insert mode'})
+vim.keymap.set('n', '<leader>w', ':%s/\\s\\+$//e<CR>', { desc = "Trim trailing whitespace" })
 
 vim.keymap.set("n", "<C-n>", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer" })
 
@@ -220,4 +271,3 @@ vim.keymap.set('n', '<leader>e', function()
     vim.cmd('NvimTreeFindFileToggle')
   end
 end, { desc = 'nvim-tree: toggle & find file' })
-
