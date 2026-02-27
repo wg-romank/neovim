@@ -94,11 +94,13 @@ require("lazy").setup({
       end, {})
       vim.keymap.set('n', '<leader>fb', ts.buffers, {})
       vim.keymap.set('n', '<leader>fw', ts.live_grep, {})
+      vim.keymap.set('n', '<leader>fc', ts.commands, {})
 
       require('telescope').setup({
         pickers = {
           find_files = { theme = 'dropdown', previewer = false },
           buffers = { theme = 'dropdown', previewer = false },
+          commands = { theme = 'dropdown', previewer = false },
         }
       })
 
@@ -225,6 +227,7 @@ require("lazy").setup({
 })
 
 -- 4. Configure Keymaps
+vim.keymap.set('n', '<leader>tt', ':term<CR> <S-A>', {desc = 'Toggle Terminal'})
 vim.keymap.set('i', '<C-c>', '<Esc>', { desc = 'Ctrl+C equivalent to escape in insert mode'})
 vim.keymap.set('n', '<leader>w', ':%s/\\s\\+$//e<CR>', { desc = "Trim trailing whitespace" })
 
@@ -237,6 +240,7 @@ vim.keymap.set("v", "<leader>/", "gc", { remap = true, desc = "Toggle comment" }
 vim.keymap.set("n", "<Tab>", "<cmd>bnext<CR>", { desc = "Switch to next buffer" })
 vim.keymap.set("n", "<S-Tab>", "<cmd>bprevious<CR>", { desc = "Switch to previous buffer" })
 vim.keymap.set("n", "<leader>x", "<cmd>bd<CR>", { desc = "Close buffer" })
+vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close buffer" })
 
 vim.keymap.set("n", "<leader>ra", vim.lsp.buf.rename, { desc = 'LSP Rename' })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = 'LSP Code actions' })
