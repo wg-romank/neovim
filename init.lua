@@ -48,11 +48,6 @@ vim.opt.rtp:prepend(lazypath)
 -- 3. Configure Plugins
 require("lazy").setup({
   {
-    'goerz/jupytext.nvim',
-    version = '0.2.0',
-    opts = {},
-  },
-  {
     "neovim/nvim-lspconfig",
     event = { "BufReadPost", "BufNewFile" },
     dependencies = {
@@ -105,8 +100,6 @@ require("lazy").setup({
       })
     end
   },
-
-  -- Status Line
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons", "mellow.nvim" },
@@ -200,6 +193,12 @@ require("lazy").setup({
     config = function()
       vim.cmd.colorscheme('mellow')
     end
+  },
+  -- Experimental
+  {
+    'goerz/jupytext.nvim',
+    version = '0.2.0',
+    opts = {},
   },
   {
     "nvim-neotest/neotest",
