@@ -24,7 +24,6 @@ alias vim='NVIM_APPNAME=nvim-custom nvim'
 
 And copy files to corresponding directory.
 
-
 ```bash
 git clone https://github.com/wg-romank/blogs.git ~/.config/nvim-custom/
 ```
