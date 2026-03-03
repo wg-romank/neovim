@@ -20,6 +20,8 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.linebreak = true
     vim.opt_local.breakindent = true
     vim.opt_local.showbreak = "  "
+    vim.opt_local.spell = true
+    require("zen-mode").toggle()
   end
 })
 
@@ -194,6 +196,28 @@ require("lazy").setup({
       vim.cmd.colorscheme('mellow')
     end
   },
+  {
+    "OXY2DEV/markview.nvim",
+    lazy = false,
+
+    -- Completion for `blink.cmp`
+    -- dependencies = { "saghen/blink.cmp" },
+  },
+  {
+    "folke/zen-mode.nvim",
+    opts = {
+      window = {
+        width = 120,      -- Narrower buffer width
+        options = {
+          number = false, -- Hide line numbers
+          relativenumber = false,
+        }
+      },
+    },
+    keys = {
+      { "<leader>z", "<cmd>ZenMode<cr>", desc = "Toggle Zen Mode" },
+    },
+  },
   -- Experimental
   {
     "folke/which-key.nvim",
@@ -211,21 +235,6 @@ require("lazy").setup({
         end,
         desc = "Buffer Local Keymaps (which-key)",
       },
-    },
-  },
-  {
-    "folke/zen-mode.nvim",
-    opts = {
-      window = {
-        width = 80,       -- Narrower buffer width
-        options = {
-          number = false, -- Hide line numbers
-          relativenumber = false,
-        }
-      },
-    },
-    keys = {
-      { "<leader>z", "<cmd>ZenMode<cr>", desc = "Toggle Zen Mode" },
     },
   },
   {
