@@ -25,13 +25,13 @@ vim.api.nvim_create_autocmd("FileType", {
 
 vim.diagnostic.config({
   float = {
-    severity = vim.diagnostic.severity.ERROR,
+    severity = vim.diagnostic.severity.WARNING,
   },
   virtual_text = {
     severity = vim.diagnostic.severity.ERROR,
   },
   signs = {
-    severity = vim.diagnostic.severity.ERROR,
+    severity = vim.diagnostic.severity.WARNING,
   },
   underline = false,
 })
@@ -54,12 +54,12 @@ require("lazy").setup({
   },
   {
     "neovim/nvim-lspconfig",
-    event = {"BufReadPost", "BufNewFile"},
+    event = { "BufReadPost", "BufNewFile" },
     dependencies = {
-      { "williamboman/mason.nvim", config = true },
-      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = {'lua_ls', 'basedpyright', 'rust_analyzer'} },
+      { "williamboman/mason.nvim",           config = true },
+      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer' } },
     },
-    config = function ()
+    config = function()
       vim.lsp.enable('lua_ls')
       vim.lsp.enable('basedpyright')
       vim.lsp.enable('rust_analyzer')
@@ -69,7 +69,7 @@ require("lazy").setup({
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
-    config = function ()
+    config = function()
       local ts = require('telescope.builtin')
       vim.keymap.set('n', 'gd', ts.lsp_definitions, {})
       vim.keymap.set('n', 'gr', ts.lsp_references, {})
@@ -103,7 +103,6 @@ require("lazy").setup({
           commands = { theme = 'dropdown', previewer = false },
         }
       })
-
     end
   },
 
@@ -112,7 +111,7 @@ require("lazy").setup({
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons", "mellow.nvim" },
     opts = { options = { theme = 'mellow' } },
-    config = function ()
+    config = function()
       local lualine = require('lualine')
 
       lualine.setup({
@@ -133,8 +132,8 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" } ,
-    config = function ()
+    dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
+    config = function()
       local configs = require("nvim-treesitter")
 
       configs.setup({
@@ -142,6 +141,9 @@ require("lazy").setup({
           enable = true,
           additional_vim_regex_highlighting = false,
         },
+        indent = {
+          enable = true
+        }
       })
 
       require('nvim-treesitter-textobjects').setup({
@@ -159,14 +161,6 @@ require("lazy").setup({
           move = {
             enable = true,
             set_jumps = true, -- Add jumps to jumplist
-            goto_next_start = {
-              ["]m"] = "@function.outer",
-              ["]]"] = "@class.outer",
-            },
-            goto_previous_start = {
-              ["[m"] = "@function.outer",
-              ["[["] = "@class.outer",
-            },
           },
         }
       })
@@ -187,7 +181,7 @@ require("lazy").setup({
       "onsails/lspkind.nvim",
       "L3MON4D3/LuaSnip",
     },
-    config = function ()
+    config = function()
       local cmp = require('cmp')
       cmp.setup({
         mapping = cmp.mapping.preset.insert({
@@ -202,7 +196,8 @@ require("lazy").setup({
     end
   },
   {
-    "mellow-theme/mellow.nvim", config = function ()
+    "mellow-theme/mellow.nvim",
+    config = function()
       vim.cmd.colorscheme('mellow')
     end
   },
@@ -223,12 +218,12 @@ require("lazy").setup({
         },
       })
     end
-  }
+  },
 })
 
 -- 4. Configure Keymaps
-vim.keymap.set('n', '<leader>tt', ':term<CR> <S-A>', {desc = 'Toggle Terminal'})
-vim.keymap.set('i', '<C-c>', '<Esc>', { desc = 'Ctrl+C equivalent to escape in insert mode'})
+vim.keymap.set('n', '<leader>tt', ':term<CR> <S-A>', { desc = 'Toggle Terminal' })
+vim.keymap.set('i', '<C-c>', '<Esc>', { desc = 'Ctrl+C equivalent to escape in insert mode' })
 vim.keymap.set('n', '<leader>w', ':%s/\\s\\+$//e<CR>', { desc = "Trim trailing whitespace" })
 
 vim.keymap.set("n", "<C-n>", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer" })
@@ -245,7 +240,12 @@ vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close buffer" })
 vim.keymap.set("n", "<leader>ra", vim.lsp.buf.rename, { desc = 'LSP Rename' })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = 'LSP Code actions' })
 vim.keymap.set("n", "<leader>lf", vim.diagnostic.open_float, { desc = 'Diagnostics' })
-vim.keymap.set({'n', 'i'}, '<C-k>', vim.lsp.buf.signature_help, {desc = 'Trigger signature help'})
+vim.keymap.set({ 'n', 'i' }, '<C-k>', vim.lsp.buf.signature_help, { desc = 'Trigger signature help' })
+
+vim.keymap.set({ "n", "v" }, "=", function()
+  vim.lsp.buf.format()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+end, { desc = "Format file or range with LSP" })
 
 vim.keymap.set({ "x", "o" }, "af", function()
   require "nvim-treesitter-textobjects.select".select_textobject("@function.outer", "textobjects")
@@ -265,6 +265,25 @@ vim.keymap.set({ "x", "o" }, "aa", function()
 end)
 vim.keymap.set({ "x", "o" }, "ia", function()
   require "nvim-treesitter-textobjects.select".select_textobject("@parameter.inner", "textobjects")
+end)
+
+vim.keymap.set({ "n", "x", "o" }, "]m", function()
+  require("nvim-treesitter-textobjects.move").goto_next_start("@function.outer", "textobjects")
+end)
+vim.keymap.set({ "n", "x", "o" }, "]]", function()
+  require("nvim-treesitter-textobjects.move").goto_next_start("@class.outer", "textobjects")
+end)
+vim.keymap.set({ "n", "x", "o" }, "]a", function()
+  require("nvim-treesitter-textobjects.move").goto_next_start("@parameter.outer", "textobjects")
+end)
+vim.keymap.set({ "n", "x", "o" }, "[m", function()
+  require("nvim-treesitter-textobjects.move").goto_previous_start("@function.outer", "textobjects")
+end)
+vim.keymap.set({ "n", "x", "o" }, "[[", function()
+  require("nvim-treesitter-textobjects.move").goto_previous_start("@class.outer", "textobjects")
+end)
+vim.keymap.set({ "n", "x", "o" }, "[a", function()
+  require("nvim-treesitter-textobjects.move").goto_previous_start("@parameter.outer", "textobjects")
 end)
 
 -- set keymap to toggle nvim-tree and find the current file
