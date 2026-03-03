@@ -66,10 +66,10 @@ require("lazy").setup({
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       local ts = require('telescope.builtin')
-      vim.keymap.set('n', 'gd', ts.lsp_definitions, {})
-      vim.keymap.set('n', 'gr', ts.lsp_references, {})
-      vim.keymap.set('n', 'gi', ts.lsp_implementations, {})
-      vim.keymap.set('n', '<leader>ff', ts.find_files, {})
+      vim.keymap.set('n', 'gd', ts.lsp_definitions, { desc = 'Go to definition' })
+      vim.keymap.set('n', 'gr', ts.lsp_references, { desc = 'Go to references' })
+      vim.keymap.set('n', 'gi', ts.lsp_implementations, { desc = 'Go to implementation' })
+      vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find files' })
       vim.keymap.set('n', '<leader>fs', function()
         require('telescope.builtin').lsp_document_symbols({
           show_line = true,
@@ -86,10 +86,10 @@ require("lazy").setup({
           sorting_strategy = "ascending",
           previewer = false,
         })
-      end, {})
-      vim.keymap.set('n', '<leader>fb', ts.buffers, {})
-      vim.keymap.set('n', '<leader>fw', ts.live_grep, {})
-      vim.keymap.set('n', '<leader>fc', ts.commands, {})
+      end, { desc = 'Find symbols' })
+      vim.keymap.set('n', '<leader>fb', ts.buffers, { desc = 'Find buffers' })
+      vim.keymap.set('n', '<leader>fw', ts.live_grep, { desc = 'Live grep' })
+      vim.keymap.set('n', '<leader>fc', ts.commands, { desc = 'Find commands' })
 
       require('telescope').setup({
         pickers = {
@@ -196,10 +196,28 @@ require("lazy").setup({
   },
   -- Experimental
   {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+    keys = {
+      {
+        "<leader>?",
+        function()
+          require("which-key").show({ global = false })
+        end,
+        desc = "Buffer Local Keymaps (which-key)",
+      },
+    },
+  },
+  {
     "folke/zen-mode.nvim",
     opts = {
       window = {
-        width = 80,     -- Narrower buffer width
+        width = 80,       -- Narrower buffer width
         options = {
           number = false, -- Hide line numbers
           relativenumber = false,
@@ -214,30 +232,6 @@ require("lazy").setup({
     'goerz/jupytext.nvim',
     version = '0.2.0',
     opts = {},
-  },
-  {
-    "coder/claudecode.nvim",
-    dependencies = { "folke/snacks.nvim" },
-    config = true,
-    keys = {
-      { "<leader>a",  nil,                              desc = "AI/Claude Code" },
-      { "<leader>ac", "<cmd>ClaudeCode<cr>",            desc = "Toggle Claude" },
-      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>",       desc = "Focus Claude" },
-      { "<leader>ar", "<cmd>ClaudeCode --resume<cr>",   desc = "Resume Claude" },
-      { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
-      { "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Claude model" },
-      { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>",       desc = "Add current buffer" },
-      { "<leader>as", "<cmd>ClaudeCodeSend<cr>",        mode = "v",                  desc = "Send to Claude" },
-      {
-        "<leader>as",
-        "<cmd>ClaudeCodeTreeAdd<cr>",
-        desc = "Add file",
-        ft = { "NvimTree", "neo-tree", "oil", "minifiles", "netrw" },
-      },
-      -- Diff management
-      { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
-      { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>",   desc = "Deny diff" },
-    },
   },
   {
     "nvim-neotest/neotest",
@@ -264,7 +258,7 @@ vim.keymap.set('n', '<leader>tt', ':term<CR> <S-A>', { desc = 'Toggle Terminal' 
 vim.keymap.set('i', '<C-c>', '<Esc>', { desc = 'Ctrl+C equivalent to escape in insert mode' })
 vim.keymap.set('n', '<leader>w', ':%s/\\s\\+$//e<CR>', { desc = "Trim trailing whitespace" })
 
-vim.keymap.set("n", "<C-n>", ":NvimTreeToggle<CR>", { desc = "Toggle File Explorer" })
+vim.keymap.set("n", "<leader>e", ":NvimTreeFindFileToggle<CR>", { desc = "nvim-tree: toggle & find file" })
 
 vim.keymap.set("n", "<leader>/", "gcc", { remap = true, desc = "Toggle comment" })
 vim.keymap.set("n", ";", ":", { remap = true, desc = "Toggle comment" })
@@ -273,7 +267,7 @@ vim.keymap.set("v", "<leader>/", "gc", { remap = true, desc = "Toggle comment" }
 vim.keymap.set("n", "<Tab>", "<cmd>bnext<CR>", { desc = "Switch to next buffer" })
 vim.keymap.set("n", "<S-Tab>", "<cmd>bprevious<CR>", { desc = "Switch to previous buffer" })
 vim.keymap.set("n", "<leader>x", "<cmd>bd<CR>", { desc = "Close buffer" })
-vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close buffer" })
+vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close! buffer" })
 
 vim.keymap.set("n", "<leader>ra", vim.lsp.buf.rename, { desc = 'LSP Rename' })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = 'LSP Code actions' })
@@ -323,12 +317,3 @@ end)
 vim.keymap.set({ "n", "x", "o" }, "[a", function()
   require("nvim-treesitter-textobjects.move").goto_previous_start("@parameter.outer", "textobjects")
 end)
-
--- set keymap to toggle nvim-tree and find the current file
-vim.keymap.set('n', '<leader>e', function()
-  if vim.fn.bufname():match('NvimTree_') then
-    vim.cmd.wincmd('p')
-  else
-    vim.cmd('NvimTreeFindFileToggle')
-  end
-end, { desc = 'nvim-tree: toggle & find file' })
