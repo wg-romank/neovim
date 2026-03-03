@@ -21,7 +21,11 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.breakindent = true
     vim.opt_local.showbreak = "  "
     vim.opt_local.spell = true
-    require("zen-mode").toggle()
+    vim.schedule(function()
+      if vim.bo.filetype == "markdown" then
+        require("zen-mode").open()
+      end
+    end)
   end
 })
 
