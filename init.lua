@@ -330,3 +330,150 @@ end)
 vim.keymap.set({ "n", "x", "o" }, "[a", function()
   require("nvim-treesitter-textobjects.move").goto_previous_start("@parameter.outer", "textobjects")
 end)
+
+local pickers = require("telescope.pickers")
+local finders = require("telescope.finders")
+local conf = require("telescope.config").values
+local previewers = require("telescope.previewers")
+local curl = require("plenary.curl")
+local actions = require("telescope.actions")
+local action_state = require("telescope.actions.state")
+
+-- Configuration: Replace with your actual instance details
+local MEMOS_URL = vim.env.MEMOS_URL
+local API_TOKEN = vim.env.MEMOS_TOKEN
+
+local _memos_cache = nil
+function fetch_memos()
+  local url = MEMOS_URL .. '/api/v1/memos'
+  local all_memos = {}
+  local next_page_token = ''
+  repeat
+    local res = curl.get(url, {
+      headers = {
+        Authorization = "Bearer " .. API_TOKEN,
+        ["Content-Type"] = "application/json",
+      },
+      query = {
+        pageSize = 100,
+        pageToken = next_page_token
+      }
+    })
+  
+    if res.status ~= 200 then
+      vim.notify("API Error: " .. res.status, vim.log.levels.ERROR)
+      return nil
+    end
+  
+    local ok, decoded = pcall(vim.fn.json_decode, res.body)
+    if decoded.memos then
+      for _, memo in ipairs(decoded.memos) do
+        table.insert(all_memos, memo)
+      end
+    end
+    next_page_token = decoded.nextPageToken or ""
+  until next_page_token == ''
+  return all_memos
+end
+
+function memos_picker(opts)
+  opts = opts or {}
+  if not _memos_cache then
+    _memos_cache = fetch_memos()
+  end
+
+  if not _memos_cache then return end
+
+
+  local layout_opts = {
+    layout_strategy = "horizontal", -- or "vertical"
+    layout_config = {
+      horizontal = {
+        preview_width = 0.6, -- Give the preview 60% of the screen
+        width = 0.9,         -- Overall picker takes 90% of screen width
+      },
+      vertical = {
+        mirror = true, -- Puts the prompt at the top
+        preview_height = 0.5,
+      },
+      prompt_position = "top",      -- Often feels more "modern"
+    },
+    sorting_strategy = "ascending", -- Required for prompt_position = "top"
+  }
+  opts = vim.tbl_deep_extend("force", layout_opts, opts)
+
+  pickers.new(opts, {
+    prompt_title = "Memos",
+    finder = finders.new_table({
+      results = _memos_cache,
+      entry_maker = function(data)
+        local content = data.content or ""
+        -- 1. Try to find a Markdown heading (e.g., "# My Title")
+        -- ^#+%s*(.-)\n matches from '#' at start to the first newline
+        local heading = content:match("^#+%s*(.-)\n")
+
+        -- 2. Fallback: If no heading, take the first line and trim it
+        local display = heading or data.content
+        if not display or display == "" then
+          -- display = content:split("\n")[1] or ""
+          if #display > 50 then
+            display = display:sub(1, 47) .. "..."
+          end
+        end
+        return {
+          value = data,
+          memo_id = data.name,
+          display = display,
+          heading = heading,
+          ordinal = display,
+          content = content,
+        }
+      end,
+    }),
+    sorter = require("telescope.sorters").get_fzy_sorter(opts),
+    -- sorter = conf.generic_sorter(opts),
+    previewer = previewers.new_buffer_previewer({
+      title = "Memo Preview",
+      define_preview = function(self, entry, status)
+        -- Fill the preview buffer with the full note content
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.split(entry.content, "\n"))
+        -- Optional: set filetype to markdown for highlighting
+        vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
+        local winid = self.state.winid
+        vim.api.nvim_win_set_option(winid, "wrap", true)      -- Enable visual wrapping
+        vim.api.nvim_win_set_option(winid, "linebreak", true) -- Wrap at word boundaries
+        vim.api.nvim_win_set_option(winid, "list", false)     -- Required for linebreak to work
+        vim.api.nvim_win_set_option(winid, "number", false)
+        vim.api.nvim_win_set_option(winid, "relativenumber", false)
+      end,
+    }),
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        -- 1. Close the picker
+        actions.close(prompt_bufnr)
+
+        -- 2. Get the selected entry
+        local selection = action_state.get_selected_entry()
+        local content = selection.content or ""
+
+        -- 3. Create a new buffer
+        local bufnr = vim.api.nvim_create_buf(true, true) -- listed, scratch
+
+        -- 4. Fill with content
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(content, "\n"))
+
+        -- 5. Set buffer options
+        vim.api.nvim_buf_set_name(bufnr, selection.heading or selection.memo_id)
+        vim.api.nvim_buf_set_option(bufnr, "filetype", "markdown")
+        vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe") -- delete on close
+
+        -- 6. Switch to the buffer
+        vim.api.nvim_set_current_buf(bufnr)
+      end)
+      return true
+    end,
+  }):find()
+end
+
+-- Usage: :lua memos_picker()
+vim.keymap.set('n', '<leader>fm', memos_picker, { desc = 'Find Memos' })
