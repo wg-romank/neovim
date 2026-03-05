@@ -55,7 +55,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   {
     "neovim/nvim-lspconfig",
-    event = { "BufReadPost", "BufNewFile" },
+    -- event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       { "williamboman/mason.nvim",           config = true },
       { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer' } },
@@ -338,6 +338,23 @@ local previewers = require("telescope.previewers")
 local curl = require("plenary.curl")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
+local cache_path = vim.fn.stdpath("data") .. "/usememos_cache.json"
+
+local function save_to_cache(data)
+  local file = io.open(cache_path, "w")
+  if file then
+    file:write(vim.json.encode(data))
+    file:close()
+  end
+end
+
+local function load_from_cache()
+  local file = io.open(cache_path, "r")
+  if not file then return nil end
+  local content = file:read("*all")
+  file:close()
+  return vim.json.decode(content)
+end
 
 -- Configuration: Replace with your actual instance details
 local MEMOS_URL = vim.env.MEMOS_URL
@@ -378,25 +395,22 @@ end
 
 function memos_picker(opts)
   opts = opts or {}
+  _memos_cache = load_from_cache()
   if not _memos_cache then
     _memos_cache = fetch_memos()
+    save_to_cache(_memos_cache)
   end
 
   if not _memos_cache then return end
 
-
   local layout_opts = {
-    layout_strategy = "horizontal", -- or "vertical"
+    previewer = true,
+    layout_strategy = 'vertical',
     layout_config = {
-      horizontal = {
-        preview_width = 0.6, -- Give the preview 60% of the screen
-        width = 0.9,         -- Overall picker takes 90% of screen width
-      },
-      vertical = {
-        mirror = true, -- Puts the prompt at the top
-        preview_height = 0.5,
-      },
-      prompt_position = "top",      -- Often feels more "modern"
+      width = 0.8,
+      preview_cutoff = 0,
+      height = 0.8,
+      prompt_position = "top",
     },
     sorting_strategy = "ascending", -- Required for prompt_position = "top"
   }
@@ -408,24 +422,26 @@ function memos_picker(opts)
       results = _memos_cache,
       entry_maker = function(data)
         local content = data.content or ""
-        -- 1. Try to find a Markdown heading (e.g., "# My Title")
-        -- ^#+%s*(.-)\n matches from '#' at start to the first newline
         local heading = content:match("^#+%s*(.-)\n")
 
-        -- 2. Fallback: If no heading, take the first line and trim it
-        local display = heading or data.content
-        if not display or display == "" then
-          -- display = content:split("\n")[1] or ""
-          if #display > 50 then
-            display = display:sub(1, 47) .. "..."
+        local display = nil
+        if heading then
+          -- local icon, hl = devicons.get_icon("x", "markdown")
+          -- display = string.format("%s %s", icon, heading) --, { { 0, #icon }, hl }
+          display = heading
+        else
+          display = data.content
+          if #display > 120 then
+            display = display:sub(1, 117) .. "..."
           end
         end
+
         return {
           value = data,
           memo_id = data.name,
           display = display,
           heading = heading,
-          ordinal = display,
+          ordinal = heading or content,
           content = content,
         }
       end,
@@ -436,7 +452,11 @@ function memos_picker(opts)
       title = "Memo Preview",
       define_preview = function(self, entry, status)
         -- Fill the preview buffer with the full note content
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.split(entry.content, "\n"))
+        local lines = vim.split(entry.content, "\n")
+        -- table.insert(lines, "")
+        -- table.insert(lines, "---")
+        -- table.insert(lines, table.concat(entry.value.tags, ", "))
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         -- Optional: set filetype to markdown for highlighting
         vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
         local winid = self.state.winid
@@ -476,4 +496,4 @@ function memos_picker(opts)
 end
 
 -- Usage: :lua memos_picker()
-vim.keymap.set('n', '<leader>fm', memos_picker, { desc = 'Find Memos' })
+vim.keymap.set('n', '<leader>mm', memos_picker, { desc = 'Find Memos' })
