@@ -78,6 +78,8 @@ require("lazy").setup({
       vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find files' })
       vim.keymap.set('n', '<leader>fs', function()
         require('telescope.builtin').lsp_document_symbols({
+          symbols = { "Class", "Function", "Interface" },
+          max_depth = 1,
           show_line = true,
           tiebreak = function(current_entry, existing_entry, _)
             return current_entry.lnum < existing_entry.lnum
@@ -312,7 +314,7 @@ vim.keymap.set({ "x", "o" }, "ia", function()
   require "nvim-treesitter-textobjects.select".select_textobject("@parameter.inner", "textobjects")
 end)
 
-vim.keymap.set({ "n", "x", "o" }, "]m", function()
+vim.keymap.set({ "n", "x", "o" }, "]f", function()
   require("nvim-treesitter-textobjects.move").goto_next_start("@function.outer", "textobjects")
 end)
 vim.keymap.set({ "n", "x", "o" }, "]]", function()
@@ -321,7 +323,7 @@ end)
 vim.keymap.set({ "n", "x", "o" }, "]a", function()
   require("nvim-treesitter-textobjects.move").goto_next_start("@parameter.outer", "textobjects")
 end)
-vim.keymap.set({ "n", "x", "o" }, "[m", function()
+vim.keymap.set({ "n", "x", "o" }, "[f", function()
   require("nvim-treesitter-textobjects.move").goto_previous_start("@function.outer", "textobjects")
 end)
 vim.keymap.set({ "n", "x", "o" }, "[[", function()
