@@ -266,6 +266,14 @@ require("lazy").setup({
       })
     end
   },
+  {
+    "wg-romank/telememos.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      "nvim-lua/plenary.nvim",
+    },
+    config = true
+  }
 })
 
 -- 4. Configure Keymaps
@@ -336,3 +344,10 @@ vim.keymap.set({ "n", "x", "o" }, "[a", function()
 end)
 
 vim.keymap.set('n', '<leader>ml', ':source %<CR>', { desc = 'Update usememos plugin' })
+
+
+vim.keymap.set('n', '<leader>mf', require('telememos').memos_picker, { desc = 'Find memo' })
+vim.keymap.set('n', '<leader>ms', function ()
+  local bufnr = vim.api.nvim_get_current_buf()
+  require('telememos').sync_memo_to_api(bufnr, nil, {})
+end, { desc = 'Save memo' })
