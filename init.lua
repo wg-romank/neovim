@@ -393,6 +393,36 @@ function fetch_memos()
   return all_memos
 end
 
+function sync_memo_to_api(bufnr, memo_id)
+  local api_url = MEMOS_URL .. '/api/v1'
+  local token = API_TOKEN
+
+  -- If we have an ID, we target the specific resource and use PATCH
+  local url = memo_id and (api_url .. "/" .. memo_id) or api_url
+  local method = memo_id and "patch" or "post"
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local content = table.concat(lines, "\n")
+
+  -- Perform the async request
+  curl[method](url, {
+    body = vim.fn.json_encode({ content = content }),
+    headers = {
+      auth = "Bearer " .. token,
+      content_type = "application/json",
+    },
+    callback = function(res)
+      vim.schedule(function()
+        if res.status >= 200 and res.status < 300 then
+          vim.api.nvim_buf_set_option(bufnr, 'modified', false)
+          print("Memo synced successfully (" .. res.status .. ")")
+        else
+          print("Error: " .. res.status .. " - " .. res.body)
+        end
+      end)
+    end,
+  })
+end
+
 function memos_picker(opts)
   opts = opts or {}
   _memos_cache = load_from_cache()
@@ -477,7 +507,7 @@ function memos_picker(opts)
         local content = selection.content or ""
 
         -- 3. Create a new buffer
-        local bufnr = vim.api.nvim_create_buf(true, true) -- listed, scratch
+        local bufnr = vim.api.nvim_create_buf(true, false) -- listed, scratch
 
         -- 4. Fill with content
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(content, "\n"))
@@ -486,6 +516,16 @@ function memos_picker(opts)
         vim.api.nvim_buf_set_name(bufnr, selection.heading or selection.memo_id)
         vim.api.nvim_buf_set_option(bufnr, "filetype", "markdown")
         vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe") -- delete on close
+
+        vim.api.nvim_create_autocmd("BufWriteCmd", {
+          buffer = bufnr,
+          callback = function()
+            -- memo_id is captured here via closure
+            print("Saving to memo ID: " .. tostring(selection.memo_id))
+            -- Perform API call...
+            sync_memo_to_api(bufnr, selection.memo_id)
+          end,
+        })
 
         -- 6. Switch to the buffer
         vim.api.nvim_set_current_buf(bufnr)
