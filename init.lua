@@ -271,6 +271,8 @@ require("lazy").setup({
 -- 4. Configure Keymaps
 vim.keymap.set('n', '<leader>tt', ':term<CR> <S-A>', { desc = 'Toggle Terminal' })
 vim.keymap.set('i', '<C-c>', '<Esc>', { desc = 'Ctrl+C equivalent to escape in insert mode' })
+vim.keymap.set('i', '<C-x>', '<Esc>:w<CR>', { desc = 'Save buffer changes' })
+vim.keymap.set('n', '<C-x>', ':w<CR>', { desc = 'Save buffer changes' })
 vim.keymap.set('n', '<leader>w', ':%s/\\s\\+$//e<CR>', { desc = "Trim trailing whitespace" })
 
 vim.keymap.set("n", "<leader>e", ":NvimTreeFindFileToggle<CR>", { desc = "nvim-tree: toggle & find file" })
