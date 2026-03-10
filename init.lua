@@ -21,11 +21,11 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.breakindent = true
     vim.opt_local.showbreak = "  "
     vim.opt_local.spell = true
-    vim.schedule(function()
-      if vim.bo.filetype == "markdown" then
-        require("zen-mode").open()
-      end
-    end)
+    -- vim.schedule(function()
+    --   if vim.bo.filetype == "markdown" then
+    --     require("zen-mode").open()
+    --   end
+    -- end)
   end
 })
 
@@ -272,6 +272,8 @@ require("lazy").setup({
       "nvim-telescope/telescope.nvim",
       "nvim-lua/plenary.nvim",
     },
+    dev = true,
+    dir = '~/Projects/telememos',
     config = true
   }
 })
@@ -343,11 +345,6 @@ vim.keymap.set({ "n", "x", "o" }, "[a", function()
   require("nvim-treesitter-textobjects.move").goto_previous_start("@parameter.outer", "textobjects")
 end)
 
-vim.keymap.set('n', '<leader>ml', ':source %<CR>', { desc = 'Update usememos plugin' })
-
-
 vim.keymap.set('n', '<leader>mf', require('telememos').memos_picker, { desc = 'Find memo' })
-vim.keymap.set('n', '<leader>ms', function ()
-  local bufnr = vim.api.nvim_get_current_buf()
-  require('telememos').sync_memo_to_api(bufnr, nil, {})
-end, { desc = 'Save memo' })
+vim.keymap.set('n', '<leader>ms', require('telememos').save_memo, { desc = 'Save memo' })
+vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Save memo' })
