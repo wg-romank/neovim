@@ -280,6 +280,7 @@ require("lazy").setup({
 
 -- 4. Configure Keymaps
 vim.keymap.set('n', '<leader>tt', ':term<CR> <S-A>', { desc = 'Toggle Terminal' })
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Escape Terminal' })
 vim.keymap.set('i', '<C-c>', '<Esc>', { desc = 'Ctrl+C equivalent to escape in insert mode' })
 vim.keymap.set('i', '<C-x>', '<Esc>:w<CR>', { desc = 'Save buffer changes' })
 vim.keymap.set('n', '<C-x>', ':w<CR>', { desc = 'Save buffer changes' })
