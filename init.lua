@@ -58,10 +58,38 @@ require("lazy").setup({
     -- event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       { "williamboman/mason.nvim",           config = true },
-      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer' } },
+      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer', 'fennel_ls' } },
     },
     config = function()
+      vim.lsp.config('lua_ls', {
+        filetypes = { 'lua', 'fennel' },
+        handlers = {
+          ["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+            local bufnr = vim.uri_to_bufnr(result.uri)
+            if vim.bo[bufnr].filetype == 'fennel' then
+              return
+            end
+            vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
+          end,
+        },
+        settings = {
+          Lua = {
+            workspace = {
+              library = {
+                vim.env.VIMRUNTIME,
+                "/Users/ext.roman.kotelnikov/.local/share/LuaAddons/library",
+              },
+              checkThirdParty = false,
+            },
+            diagnostics = {
+              globals = { 'vim' },
+            },
+          },
+        },
+      })
+
       vim.lsp.enable('lua_ls')
+      vim.lsp.enable('fennel_ls')
       vim.lsp.enable('basedpyright')
       vim.lsp.enable('rust_analyzer')
     end
@@ -132,21 +160,17 @@ require("lazy").setup({
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
     dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
     config = function()
-      local configs = require("nvim-treesitter")
-
-      configs.setup({
-        highlight = {
-          enable = true,
-          additional_vim_regex_highlighting = false,
-        },
-        indent = {
-          enable = true
-        }
+      -- Needs a TSUpdate for required languages
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function()
+          local lang = vim.treesitter.language.get_lang(vim.bo.filetype)
+          if lang then
+            pcall(vim.treesitter.start)
+          end
+        end,
       })
-
       require('nvim-treesitter-textobjects').setup({
         select = {
           enable = true,
@@ -349,3 +373,10 @@ end)
 vim.keymap.set('n', '<leader>mf', require('telememos').memos_picker, { desc = 'Find memo' })
 vim.keymap.set('n', '<leader>ms', require('telememos').save_memo, { desc = 'Save memo' })
 vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Save memo' })
+
+-- vim.api.nvim_create_autocmd('FileType', {
+--   pattern = 'fennel',
+--   callback = function()
+--     vim.treesitter.start()
+--   end,
+-- })
