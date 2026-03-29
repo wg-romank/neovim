@@ -62,16 +62,16 @@ require("lazy").setup({
     },
     config = function()
       vim.lsp.config('lua_ls', {
-        filetypes = { 'lua', 'fennel' },
-        handlers = {
-          ["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
-            local bufnr = vim.uri_to_bufnr(result.uri)
-            if vim.bo[bufnr].filetype == 'fennel' then
-              return
-            end
-            vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
-          end,
-        },
+        filetypes = { 'lua', },
+        -- handlers = {
+        --   ["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+        --     local bufnr = vim.uri_to_bufnr(result.uri)
+        --     if vim.bo[bufnr].filetype == 'fennel' then
+        --       return
+        --     end
+        --     vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
+        --   end,
+        -- },
         settings = {
           Lua = {
             workspace = {
@@ -86,6 +86,11 @@ require("lazy").setup({
             },
           },
         },
+      })
+
+      vim.lsp.config('fennel_ls', {
+        -- root_dir = require('lspconfig').util.root_pattern("flsproject.fnl", ".git", "main.fnl"),
+        root_dir = "/Users/ext.roman.kotelnikov/Projects/platformer"
       })
 
       vim.lsp.enable('lua_ls')
@@ -374,9 +379,10 @@ vim.keymap.set('n', '<leader>mf', require('telememos').memos_picker, { desc = 'F
 vim.keymap.set('n', '<leader>ms', require('telememos').save_memo, { desc = 'Save memo' })
 vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Save memo' })
 
--- vim.api.nvim_create_autocmd('FileType', {
---   pattern = 'fennel',
---   callback = function()
---     vim.treesitter.start()
---   end,
--- })
+vim.api.nvim_create_autocmd('BufWritePost', {
+  pattern = '*.fnl',
+  callback = function()
+    vim.cmd("!make")
+  end,
+})
+
