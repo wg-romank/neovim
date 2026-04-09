@@ -62,7 +62,7 @@ require("lazy").setup({
     },
     config = function()
       vim.lsp.config('lua_ls', {
-        filetypes = { 'lua', },
+        filetypes = { 'lua' },
         -- handlers = {
         --   ["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
         --     local bufnr = vim.uri_to_bufnr(result.uri)
@@ -109,6 +109,7 @@ require("lazy").setup({
       vim.keymap.set('n', 'gr', ts.lsp_references, { desc = 'Go to references' })
       vim.keymap.set('n', 'gi', ts.lsp_implementations, { desc = 'Go to implementation' })
       vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find files' })
+      vim.keymap.set('n', '<leader>fd', ts.diagnostics, { desc = 'Find diagnostics messages' })
       vim.keymap.set('n', '<leader>fs', function()
         require('telescope.builtin').lsp_document_symbols({
           symbols = { "Class", "Function", "Interface" },
@@ -140,6 +141,16 @@ require("lazy").setup({
         }
       })
     end
+  },
+  {
+    "wg-romank/telememos.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      "nvim-lua/plenary.nvim",
+    },
+    dev = true,
+    dir = '~/Projects/telememos',
+    config = true
   },
   {
     "nvim-lualine/lualine.nvim",
@@ -255,6 +266,46 @@ require("lazy").setup({
   },
   -- Experimental
   {
+    "mfussenegger/nvim-dap",
+    event = "VeryLazy",
+    dependencies = {
+      "rcarriga/nvim-dap-ui",
+      "nvim-neotest/nvim-nio",
+      "jay-babu/mason-nvim-dap.nvim",
+      "theHamsta/nvim-dap-virtual-text",
+    },
+    config = function()
+      local dap = require('dap')
+
+      -- 1. Define the Adapter
+      dap.adapters["local-lua"] = {
+        type = "executable",
+        command = "node",
+        args = {
+          -- Replace this with the actual path installed by Mason
+          "/Users/ext.roman.kotelnikov/.local/share/nvim-light/mason/packages/local-lua-debugger-vscode/extension/extension/debugAdapter.js"
+        },
+      }
+
+      -- 2. Define the Configuration
+      dap.configurations.lua = {
+        {
+          name = 'Debug current file',
+          type = 'local-lua',
+          request = 'launch',
+          cwd = "${workspaceFolder}",
+          program = {
+            command = "love", -- or the lua version you are using
+          },
+          args = { "." },
+        },
+      }
+
+      local dapui = require('dapui')
+      dapui.setup()
+    end
+  },
+  {
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
@@ -271,11 +322,6 @@ require("lazy").setup({
         desc = "Buffer Local Keymaps (which-key)",
       },
     },
-  },
-  {
-    'goerz/jupytext.nvim',
-    version = '0.2.0',
-    opts = {},
   },
   {
     "nvim-neotest/neotest",
@@ -295,16 +341,6 @@ require("lazy").setup({
       })
     end
   },
-  {
-    "wg-romank/telememos.nvim",
-    dependencies = {
-      "nvim-telescope/telescope.nvim",
-      "nvim-lua/plenary.nvim",
-    },
-    dev = true,
-    dir = '~/Projects/telememos',
-    config = true
-  }
 })
 
 -- 4. Configure Keymaps
@@ -378,11 +414,4 @@ end)
 vim.keymap.set('n', '<leader>mf', require('telememos').memos_picker, { desc = 'Find memo' })
 vim.keymap.set('n', '<leader>ms', require('telememos').save_memo, { desc = 'Save memo' })
 vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Save memo' })
-
-vim.api.nvim_create_autocmd('BufWritePost', {
-  pattern = '*.fnl',
-  callback = function()
-    vim.cmd("!make")
-  end,
-})
 
