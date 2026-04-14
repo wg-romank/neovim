@@ -362,6 +362,22 @@ vim.keymap.set("n", "<S-Tab>", "<cmd>bprevious<CR>", { desc = "Switch to previou
 vim.keymap.set("n", "<leader>x", "<cmd>bd<CR>", { desc = "Close buffer" })
 vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close! buffer" })
 
+-- Hide terminal buffers from the buffer list
+vim.api.nvim_create_autocmd("TermOpen", {
+    group = vim.api.nvim_create_augroup("custom-term-open", { clear = true }),
+    callback = function()
+        vim.opt_local.buflisted = false
+    end,
+})
+
+-- Hide NvimTree (and other filetree) buffers
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "NvimTree", "neo-tree" },
+    callback = function()
+        vim.opt_local.buflisted = false
+    end,
+})
+
 vim.keymap.set("n", "<leader>ra", vim.lsp.buf.rename, { desc = 'LSP Rename' })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = 'LSP Code actions' })
 vim.keymap.set("n", "<leader>lf", vim.diagnostic.open_float, { desc = 'Diagnostics' })
@@ -414,4 +430,8 @@ end)
 vim.keymap.set('n', '<leader>mf', require('telememos').memos_picker, { desc = 'Find memo' })
 vim.keymap.set('n', '<leader>ms', require('telememos').save_memo, { desc = 'Save memo' })
 vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Save memo' })
+
+
+-- Copy absolute path to clipboard using <leader>cp
+vim.keymap.set('n', '<leader>cp', ':let @+ = expand("%")<CR>', { desc = 'Copy full path' })
 
