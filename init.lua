@@ -100,7 +100,20 @@ require("lazy").setup({
       vim.lsp.enable('rust_analyzer')
     end
   },
-  { "nvim-tree/nvim-tree.lua", config = true, dependencies = { "nvim-tree/nvim-web-devicons" } },
+  { "nvim-tree/nvim-tree.lua", config = function ()
+      require('nvim-tree').setup(
+        {
+          on_attach = function(bufnr)
+            local api = require("nvim-tree.api")
+
+            api.config.mappings.default_on_attach(bufnr)
+            -- unbind tab
+            vim.keymap.set('n', '<Tab>', ':NvimTreeToggle<CR>', { buffer = bufnr })
+          end,
+        })
+    end,
+    dependencies = { "nvim-tree/nvim-web-devicons" }
+  },
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
