@@ -3,6 +3,7 @@ vim.g.loaded_python3_provider = 0
 vim.g.mapleader = " "
 vim.g.no_plugin_maps = true
 
+vim.o.exrc = true
 vim.opt.number = true
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
@@ -366,8 +367,8 @@ vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close! buffer" })
 vim.api.nvim_create_autocmd("TermOpen", {
     group = vim.api.nvim_create_augroup("custom-term-open", { clear = true }),
     callback = function()
-        vim.opt_local.buflisted = false
-    end,
+    vim.opt_local.buflisted = false
+  end,
 })
 
 -- Hide NvimTree (and other filetree) buffers
