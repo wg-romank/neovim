@@ -10,9 +10,13 @@ vim.opt.expandtab = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.cmdheight = 0
 vim.opt.laststatus = 0
-vim.opt.termguicolors = true
+vim.opt.termguicolors = false
 vim.opt.showcmd = true
 vim.opt.showcmdloc = 'statusline'
+vim.opt.showtabline = 0
+
+-- make sure tabs are just buffers
+vim.api.nvim_create_user_command('Tabnew', 'enew', { bang = true })
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "markdown", "text" },
