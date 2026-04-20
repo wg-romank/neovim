@@ -104,7 +104,9 @@ require("lazy").setup({
       vim.lsp.enable('rust_analyzer')
     end
   },
-  { "nvim-tree/nvim-tree.lua", config = function ()
+  {
+    "nvim-tree/nvim-tree.lua",
+    config = function()
       require('nvim-tree').setup(
         {
           on_attach = function(bufnr)
