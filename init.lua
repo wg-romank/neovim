@@ -121,6 +121,49 @@ require("lazy").setup({
     dependencies = { "nvim-tree/nvim-web-devicons" }
   },
   {
+    'dmtrKovalenko/fff.nvim',
+    build = function()
+      -- downloads a prebuilt binary or falls back to cargo build
+      require("fff.download").download_or_build_binary()
+    end,
+    -- for nixos:
+    -- build = "nix run .#release",
+    opts = {
+      prompt = '> ',
+      title = 'Files',
+      layout = {
+        prompt_position = "top"
+      },
+      debug = {
+        enabled = false,
+      },
+      preview = {
+        enabled = false
+      },
+      history = {
+        enabled = false
+      },
+      frecency = {
+        enabled = false
+      }
+    },
+    lazy = false, -- the plugin lazy-initialises itself
+    keys = {
+      { "ff", function() require('fff').find_files() end, desc = 'FFFind files' },
+      { "fw", function() require('fff').live_grep() end,  desc = 'LiFFFe grep' },
+      {
+        "fz",
+        function() require('fff').live_grep({ grep = { modes = { 'plain' } } }) end,
+        desc = 'Live fffuzy grep',
+      },
+      {
+        "fc",
+        function() require('fff').live_grep({ query = vim.fn.expand("<cword>") }) end,
+        desc = 'Search current word',
+      },
+    },
+  },
+  {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
@@ -128,7 +171,7 @@ require("lazy").setup({
       vim.keymap.set('n', 'gd', ts.lsp_definitions, { desc = 'Go to definition' })
       vim.keymap.set('n', 'gr', ts.lsp_references, { desc = 'Go to references' })
       vim.keymap.set('n', 'gi', ts.lsp_implementations, { desc = 'Go to implementation' })
-      vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find files' })
+      -- vim.keymap.set('n', '<leader>ff', ts.find_files, { desc = 'Find files' })
       vim.keymap.set('n', '<leader>fd', ts.diagnostics, { desc = 'Find diagnostics messages' })
       vim.keymap.set('n', '<leader>fs', function()
         require('telescope.builtin').lsp_document_symbols({
@@ -150,8 +193,8 @@ require("lazy").setup({
         })
       end, { desc = 'Find symbols' })
       vim.keymap.set('n', '<leader>fb', ts.buffers, { desc = 'Find buffers' })
-      vim.keymap.set('n', '<leader>fw', ts.live_grep, { desc = 'Live grep' })
-      vim.keymap.set('n', '<leader>fc', ts.commands, { desc = 'Find commands' })
+      -- vim.keymap.set('n', '<leader>fw', ts.live_grep, { desc = 'Live grep' })
+      -- vim.keymap.set('n', '<leader>fc', ts.commands, { desc = 'Find commands' })
 
       require('telescope').setup({
         pickers = {
@@ -344,12 +387,16 @@ require("lazy").setup({
     },
   },
   {
-    "nvim-neotest/neotest",
-    dependencies = {
-      "nvim-neotest/neotest-python",
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-neotest/nvim-nio"
-    },
+    'stevearc/oil.nvim',
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Optional dependencies
+    dependencies = { { "nvim-mini/mini.icons", opts = {} } },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+    lazy = false,
+  },
     config = function()
       require("neotest").setup({
         adapters = {
@@ -379,7 +426,7 @@ vim.keymap.set("v", "<leader>/", "gc", { remap = true, desc = "Toggle comment" }
 
 vim.keymap.set("n", "<Tab>", "<cmd>bnext<CR>", { desc = "Switch to next buffer" })
 vim.keymap.set("n", "<S-Tab>", "<cmd>bprevious<CR>", { desc = "Switch to previous buffer" })
-vim.keymap.set("n", "<leader>x", "<cmd>bd<CR>", { desc = "Close buffer" })
+vim.keymap.set("n", "<leader>x", ":bp <BAR> bd #<CR>", { desc = "Close buffer" })
 vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close! buffer" })
 
 -- Hide terminal buffers from the buffer list
