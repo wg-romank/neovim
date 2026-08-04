@@ -212,7 +212,7 @@ require("lazy").setup({
       "nvim-lua/plenary.nvim",
     },
     dev = true,
-    dir = '~/Projects/telememos',
+    dir = '~/Projects/telememos.nvim',
     config = true
   },
   {
@@ -329,46 +329,6 @@ require("lazy").setup({
   },
   -- Experimental
   {
-    "mfussenegger/nvim-dap",
-    event = "VeryLazy",
-    dependencies = {
-      "rcarriga/nvim-dap-ui",
-      "nvim-neotest/nvim-nio",
-      "jay-babu/mason-nvim-dap.nvim",
-      "theHamsta/nvim-dap-virtual-text",
-    },
-    config = function()
-      local dap = require('dap')
-
-      -- 1. Define the Adapter
-      dap.adapters["local-lua"] = {
-        type = "executable",
-        command = "node",
-        args = {
-          -- Replace this with the actual path installed by Mason
-          "/Users/ext.roman.kotelnikov/.local/share/nvim-light/mason/packages/local-lua-debugger-vscode/extension/extension/debugAdapter.js"
-        },
-      }
-
-      -- 2. Define the Configuration
-      dap.configurations.lua = {
-        {
-          name = 'Debug current file',
-          type = 'local-lua',
-          request = 'launch',
-          cwd = "${workspaceFolder}",
-          program = {
-            command = "love", -- or the lua version you are using
-          },
-          args = { "." },
-        },
-      }
-
-      local dapui = require('dapui')
-      dapui.setup()
-    end
-  },
-  {
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
@@ -396,17 +356,6 @@ require("lazy").setup({
     -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
     -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
     lazy = false,
-  },
-    config = function()
-      require("neotest").setup({
-        adapters = {
-          require("neotest-python")({
-            runner = "pytest",
-            python = ''
-          }),
-        },
-      })
-    end
   },
 })
 
