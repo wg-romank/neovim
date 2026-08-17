@@ -15,6 +15,8 @@ vim.opt.showcmd = true
 vim.opt.showcmdloc = 'statusline'
 vim.opt.showtabline = 0
 
+vim.opt.mouse = 'nv'
+
 -- make sure tabs are just buffers
 vim.api.nvim_create_user_command('Tabnew', 'enew', { bang = true })
 
@@ -26,7 +28,7 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.breakindent = true
     vim.opt_local.showbreak = "  "
     vim.opt_local.spell = true
-    -- vim.schedule(function()
+    -- vim.scheidule(function()
     --   if vim.bo.filetype == "markdown" then
     --     require("zen-mode").open()
     --   end
@@ -218,7 +220,8 @@ require("lazy").setup({
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons", "mellow.nvim" },
-    opts = { options = { theme = 'mellow' } },
+    -- opts = { options = { theme = 'mellow' } },
+    opts = {},
     config = function()
       local lualine = require('lualine')
 
@@ -299,12 +302,12 @@ require("lazy").setup({
       })
     end
   },
-  {
-    "mellow-theme/mellow.nvim",
-    config = function()
-      vim.cmd.colorscheme('mellow')
-    end
-  },
+  -- {
+  --   "mellow-theme/mellow.nvim",
+  --   config = function()
+  --     vim.cmd.colorscheme('mellow')
+  --   end
+  -- },
   {
     "OXY2DEV/markview.nvim",
     lazy = false,
@@ -445,9 +448,36 @@ end)
 
 vim.keymap.set('n', '<leader>mf', require('telememos').memos_picker, { desc = 'Find memo' })
 vim.keymap.set('n', '<leader>ms', require('telememos').save_memo, { desc = 'Save memo' })
-vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Save memo' })
+vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Delete memo' })
 
 
 -- Copy absolute path to clipboard using <leader>cp
 vim.keymap.set('n', '<leader>cp', ':let @+ = expand("%")<CR>', { desc = 'Copy full path' })
+
+vim.api.nvim_create_autocmd("TermOpen", {
+  pattern = "*",
+  callback = function(args)
+    -- 1. Make the terminal visible in buffer lists (:ls)
+    vim.opt_local.buflisted = true
+
+    -- 2. Extract the directory from Neovim's default terminal path
+    -- Replaces "term://{dir}//{pid}:{shell}" down to just the folder name
+    local full_path = vim.api.nvim_buf_get_name(args.buf)
+    local dir_path = string.match(full_path, "term://(.-)//")
+
+    if dir_path then
+      -- Get only the last folder name (e.g., /home/user/project -> project)
+      local dir_name = vim.fs.basename(dir_path)
+      
+      -- Add a visual prefix so you can easily spot it in your :ls list
+      local custom_name = "term:" .. dir_name
+
+      -- 3. Set the clean custom name to the buffer safely
+      -- Uses pcall to gracefully handle duplicate names if you open multiple terminals in one folder
+      pcall(vim.api.nvim_buf_set_name, args.buf, custom_name)
+    end
+  end,
+})
+
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
