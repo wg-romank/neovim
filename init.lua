@@ -10,7 +10,7 @@ vim.opt.expandtab = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.cmdheight = 0
 vim.opt.laststatus = 0
-vim.opt.termguicolors = false
+vim.opt.termguicolors = true
 vim.opt.showcmd = true
 vim.opt.showcmdloc = 'statusline'
 vim.opt.showtabline = 0
@@ -65,20 +65,11 @@ require("lazy").setup({
     -- event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       { "williamboman/mason.nvim",           config = true },
-      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer', 'fennel_ls' } },
+      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer' } },
     },
     config = function()
       vim.lsp.config('lua_ls', {
         filetypes = { 'lua' },
-        -- handlers = {
-        --   ["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
-        --     local bufnr = vim.uri_to_bufnr(result.uri)
-        --     if vim.bo[bufnr].filetype == 'fennel' then
-        --       return
-        --     end
-        --     vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
-        --   end,
-        -- },
         settings = {
           Lua = {
             workspace = {
@@ -95,14 +86,26 @@ require("lazy").setup({
         },
       })
 
-      vim.lsp.config('fennel_ls', {
-        -- root_dir = require('lspconfig').util.root_pattern("flsproject.fnl", ".git", "main.fnl"),
-        root_dir = "/Users/ext.roman.kotelnikov/Projects/platformer"
+      vim.lsp.config('basedpyright', {
+        flags = {
+          debounce_text_changes = 150,
+        },
+        settings = {
+          basedpyright = {
+            analysis = {
+              -- Stops it from aggressively scanning third-party dependencies
+              useLibraryCodeForTypes = false,
+              -- ONLY check errors in files you actively have open
+              diagnosticMode = "openFilesOnly",
+              -- Switch to "basic" or "standard" if strict mode is choking your CPU
+              typeCheckingMode = "basic",
+              -- If auto-imports lag as you type, turn them off completely
+              autoImportCompletions = false,
+            },
+          },
+        },
       })
 
-      vim.lsp.enable('lua_ls')
-      vim.lsp.enable('fennel_ls')
-      vim.lsp.enable('basedpyright')
       vim.lsp.enable('rust_analyzer')
     end
   },
@@ -302,12 +305,12 @@ require("lazy").setup({
       })
     end
   },
-  -- {
-  --   "mellow-theme/mellow.nvim",
-  --   config = function()
-  --     vim.cmd.colorscheme('mellow')
-  --   end
-  -- },
+  {
+    "mellow-theme/mellow.nvim",
+    config = function()
+      vim.cmd.colorscheme('mellow')
+    end
+  },
   {
     "OXY2DEV/markview.nvim",
     lazy = false,
