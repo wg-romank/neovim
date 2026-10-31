@@ -65,7 +65,7 @@ require("lazy").setup({
     -- event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       { "williamboman/mason.nvim",           config = true },
-      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer' } },
+      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'ty', 'rust_analyzer' } },
     },
     config = function()
       vim.lsp.config('lua_ls', {
@@ -86,27 +86,8 @@ require("lazy").setup({
         },
       })
 
-      vim.lsp.config('basedpyright', {
-        flags = {
-          debounce_text_changes = 150,
-        },
-        settings = {
-          basedpyright = {
-            analysis = {
-              -- Stops it from aggressively scanning third-party dependencies
-              useLibraryCodeForTypes = false,
-              -- ONLY check errors in files you actively have open
-              diagnosticMode = "openFilesOnly",
-              -- Switch to "basic" or "standard" if strict mode is choking your CPU
-              typeCheckingMode = "basic",
-              -- If auto-imports lag as you type, turn them off completely
-              autoImportCompletions = false,
-            },
-          },
-        },
-      })
-
       vim.lsp.enable('rust_analyzer')
+      vim.lsp.enable('ty')
     end
   },
   {
