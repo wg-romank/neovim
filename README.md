@@ -27,3 +27,17 @@ And copy files to corresponding directory.
 ```bash
 git clone https://github.com/wg-romank/blogs.git ~/.config/nvim-custom/
 ```
+
+# Tree-sitter & grammars
+
+If text objects don't work check grammar is installed for language
+
+```
+:TSInstall <lang>
+```
+
+If above step fails, check `tree-sitter-cli` is available as it is used for build.
+
+```
+cargo install --locked tree-sitter-cli
+```
