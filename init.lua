@@ -1,7 +1,15 @@
 -- 1. General Settings
 vim.g.loaded_python3_provider = 0
 vim.g.mapleader = " "
+vim.g.maplocalleader = ","
 vim.g.no_plugin_maps = true
+
+vim.o.guifont = "JetBrainsMono Nerd Font:h16" -- Replace 'Fira Code' with your font and '12' with your size
+vim.g.neovide_cursor_animation_length = 0
+vim.g.neovide_cursor_trail_size = 0
+vim.g.neovide_scroll_animation_length = 0
+vim.g.neovide_position_animation_length = 0
+
 
 vim.o.exrc = true
 vim.opt.number = true
@@ -14,6 +22,13 @@ vim.opt.termguicolors = false
 vim.opt.showcmd = true
 vim.opt.showcmdloc = 'statusline'
 vim.opt.showtabline = 0
+-- vim.opt.foldcolumn = "1"
+-- vim.opt.foldmethod = "expr"
+-- vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+-- vim.opt.foldlevel = 99
+vim.opt.wrap = false
+
+-- vim.cmd.colorscheme('quiet')
 
 -- make sure tabs are just buffers
 vim.api.nvim_create_user_command('Tabnew', 'enew', { bang = true })
@@ -63,7 +78,7 @@ require("lazy").setup({
     -- event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       { "williamboman/mason.nvim",           config = true },
-      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'lua_ls', 'basedpyright', 'rust_analyzer', 'fennel_ls' } },
+      { "williamboman/mason-lspconfig.nvim", config = true, ensure_installed = { 'gopls', 'lua_ls', 'basedpyright', 'rust_analyzer', 'fennel_ls' } },
     },
     config = function()
       vim.lsp.config('lua_ls', {
@@ -102,6 +117,7 @@ require("lazy").setup({
       vim.lsp.enable('fennel_ls')
       vim.lsp.enable('basedpyright')
       vim.lsp.enable('rust_analyzer')
+      vim.lsp.enable('gopls')
     end
   },
   {
@@ -216,20 +232,40 @@ require("lazy").setup({
     config = true
   },
   {
+    "nvimj",
+    dev = true,
+    dir = '~/Projects/nvimj',
+    config = true
+    -- config = function ()
+    --   require('nvimj').setup({
+    --     command = "~/j9.7/bin/jconsole"
+    --   })
+    -- end
+  },
+  {
     "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons", "mellow.nvim" },
-    opts = { options = { theme = 'mellow' } },
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {},
     config = function()
       local lualine = require('lualine')
 
       lualine.setup({
         options = {
           globalstatus = true,
+          theme = 'nightfly'
         },
         sections = {
           lualine_a = { 'mode' },
           lualine_b = { '%S' },
-          lualine_c = { 'buffers', { show_filename_only = true } },
+          lualine_c = {
+            {
+              'buffers',
+              show_filename_only = true,
+              buffers_color =
+              { active = { gui = 'bold', fg = '#ffffff' }
+              }
+            }
+          },
           lualine_x = { 'lsp_status' },
           lualine_y = { 'location' },
           lualine_z = { 'searchcount', 'selectioncount' }
@@ -300,12 +336,6 @@ require("lazy").setup({
     end
   },
   {
-    "mellow-theme/mellow.nvim",
-    config = function()
-      vim.cmd.colorscheme('mellow')
-    end
-  },
-  {
     "OXY2DEV/markview.nvim",
     lazy = false,
 
@@ -329,44 +359,14 @@ require("lazy").setup({
   },
   -- Experimental
   {
-    "mfussenegger/nvim-dap",
-    event = "VeryLazy",
-    dependencies = {
-      "rcarriga/nvim-dap-ui",
-      "nvim-neotest/nvim-nio",
-      "jay-babu/mason-nvim-dap.nvim",
-      "theHamsta/nvim-dap-virtual-text",
-    },
+    "FabijanZulj/blame.nvim",
+    lazy = false,
     config = function()
-      local dap = require('dap')
-
-      -- 1. Define the Adapter
-      dap.adapters["local-lua"] = {
-        type = "executable",
-        command = "node",
-        args = {
-          -- Replace this with the actual path installed by Mason
-          "/Users/ext.roman.kotelnikov/.local/share/nvim-light/mason/packages/local-lua-debugger-vscode/extension/extension/debugAdapter.js"
-        },
-      }
-
-      -- 2. Define the Configuration
-      dap.configurations.lua = {
-        {
-          name = 'Debug current file',
-          type = 'local-lua',
-          request = 'launch',
-          cwd = "${workspaceFolder}",
-          program = {
-            command = "love", -- or the lua version you are using
-          },
-          args = { "." },
-        },
-      }
-
-      local dapui = require('dapui')
-      dapui.setup()
-    end
+      require('blame').setup {}
+    end,
+    -- opts = {
+    --   blame_options = { '-w' },
+    -- },
   },
   {
     "folke/which-key.nvim",
@@ -390,23 +390,17 @@ require("lazy").setup({
     'stevearc/oil.nvim',
     ---@module 'oil'
     ---@type oil.SetupOpts
-    opts = {},
+    opts = {
+      view_options = {
+        -- Show files and directories that start with "."
+        show_hidden = true,
+      },
+    },
     -- Optional dependencies
     dependencies = { { "nvim-mini/mini.icons", opts = {} } },
     -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
     -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
     lazy = false,
-  },
-    config = function()
-      require("neotest").setup({
-        adapters = {
-          require("neotest-python")({
-            runner = "pytest",
-            python = ''
-          }),
-        },
-      })
-    end
   },
 })
 
@@ -431,18 +425,18 @@ vim.keymap.set("n", "<leader>X", "<cmd>bd!<CR>", { desc = "Close! buffer" })
 
 -- Hide terminal buffers from the buffer list
 vim.api.nvim_create_autocmd("TermOpen", {
-    group = vim.api.nvim_create_augroup("custom-term-open", { clear = true }),
-    callback = function()
+  group = vim.api.nvim_create_augroup("custom-term-open", { clear = true }),
+  callback = function()
     vim.opt_local.buflisted = false
   end,
 })
 
 -- Hide NvimTree (and other filetree) buffers
 vim.api.nvim_create_autocmd("FileType", {
-    pattern = { "NvimTree", "neo-tree" },
-    callback = function()
-        vim.opt_local.buflisted = false
-    end,
+  pattern = { "NvimTree", "neo-tree" },
+  callback = function()
+    vim.opt_local.buflisted = false
+  end,
 })
 
 vim.keymap.set("n", "<leader>ra", vim.lsp.buf.rename, { desc = 'LSP Rename' })
@@ -502,3 +496,57 @@ vim.keymap.set('n', '<leader>md', require('telememos').delete_memo, { desc = 'Sa
 -- Copy absolute path to clipboard using <leader>cp
 vim.keymap.set('n', '<leader>cp', ':let @+ = expand("%")<CR>', { desc = 'Copy full path' })
 
+vim.keymap.set('n', '<leader>gb', ':BlameToggle<CR>', { desc = 'Toggle git blame' })
+vim.keymap.set('n', '<leader>aa', ':Alpha<CR>', { desc = 'Toggle alpha' })
+vim.keymap.set('n', '<leader>ww', ':set wrap!<CR>', { desc = 'Toggle wrap' })
+
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+
+vim.keymap.set("n", "<leader>da", "<CMD>diffthis<CR>", { desc = "Add to diff" })
+vim.keymap.set("n", "<leader>dd", "<CMD>windo diffoff<CR>", { desc = "Add to diff" })
+
+vim.keymap.set({ "n", "x", "o" }, "<leader>r", require('nvimj').send_motion, { desc = 'Send to REPL', expr = true })
+-- vim.keymap.set({"n", "x", "o"}, "<leader>gg", require('nvimj').ask_gemini, { desc = 'Send to REPL'} )
+
+function project_picker()
+  -- Change this path to your actual projects directory
+  local path = "~/Projects"
+
+  require("telescope.builtin").find_files({
+    prompt_title = "Select Project",
+    cwd = path,
+    -- Use find or fd to only show top-level directories
+    find_command = { "find", ".", "-maxdepth", "1", "-type", "d", "-not", "-path", "." },
+    attach_mappings = function(prompt_bufnr, map)
+      local actions = require("telescope.actions")
+      local action_state = require("telescope.actions.state")
+
+      -- On selection, cd into the folder and open a file picker
+      map("i", "<CR>", function()
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd("cd " .. path .. "/" .. selection[1])
+        require("telescope.builtin").find_files()
+      end)
+      return true
+    end,
+  })
+end
+
+-- Fix for Terminals: Triggered exactly when a terminal buffer opens
+vim.api.nvim_create_autocmd("TermOpen", {
+  group = group,
+  pattern = "*",
+  callback = function()
+    vim.opt_local.buflisted = true
+  end,
+})
+
+-- Fix for Help files: Triggered exactly when the help filetype is assigned
+vim.api.nvim_create_autocmd("FileType", {
+  group = group,
+  pattern = "help",
+  callback = function()
+    vim.opt_local.buflisted = true
+  end,
+})
